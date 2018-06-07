@@ -58,25 +58,23 @@
   }).addTo(map);
 
   electionDistricts.bindPopup(layer => {
-    ['DEM', 'REP', 'LIB', 'INDEP'].forEach(party => {
-      layer.feature.properties[party + 'TOTALVOTES'] = layer.feature.properties[party + 'TOTALVOTES'] || 0
-    })
+    const properties = layer.feature.properties
 
-    layer.feature.properties.PERCENTVOTING = parseInt((layer.feature.properties.TOTALVOTES / layer.feature.properties.POPULATION) * 100)
+    properties.PERCENTVOTING = parseInt((properties.TOTALVOTES / properties.POPULATION) * 100)
 
     const lines = [
       '<b>District {DISTRICT_1}</b>',
       'Hillary Clinton (D): {DEMTOTALVOTES}',
       'Donald Trump (R): {REPTOTALVOTES}',
-      'Jill Stein (G): {LIBTOTALVOTES}',
-      'Gary Johnson (I): {INDEPTOTALVOTES}',
+      'Jill Stein (G): {GREENTOTALVOTES}',
+      'Gary Johnson (L): {LIBTOTALVOTES}',
       '',
       'Total Votes: {TOTALVOTES}',
       'Population: {POPULATION}',
       'Percentage of Population Voting: {PERCENTVOTING}%'
     ]
 
-    return L.Util.template(lines.join('<BR>'), layer.feature.properties)  
+    return L.Util.template(lines.join('<BR>'), properties)  
   })
 
 </script>
