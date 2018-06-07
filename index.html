@@ -66,6 +66,8 @@
       layer.feature.properties[party + 'TOTALVOTES'] = layer.feature.properties[party + 'TOTALVOTES'] || 0
     })
 
+    layer.feature.properties.PERCENTVOTING = parseInt((layer.feature.properties.TOTALVOTES / layer.feature.properties.POPULATION) * 100)
+
     const lines = [
       '<b>District {DISTRICT_1}</b>',
       'Hillary Clinton (D): {DEMTOTALVOTES}',
@@ -74,7 +76,8 @@
       'Gary Johnson (I): {INDEPTOTALVOTES}',
       '',
       'Total Votes: {TOTALVOTES}',
-      'Population: {POPULATION}'
+      'Population: {POPULATION}',
+      'Percentage of Population Voting: {PERCENTVOTING}'
     ]
 
     return L.Util.template(lines.join('<BR>'), layer.feature.properties)  
