@@ -1,83 +1,126 @@
 <html>
 <head>
   <meta charset=utf-8 />
-  <title>2016 Presidential Election Results -- An Open Data Delaware Project</title>
+  <title>Mapping Project Examples - Open Data Delaware</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-  <!-- Load Leaflet from CDN -->
+  <!-- Load Leaflet from CDN 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
   integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
   crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
   integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
   crossorigin=""></script>
+   End Leaflet -->
 
-
-  <!-- Load Esri Leaflet from CDN -->
+  <!-- Load Esri Leaflet from CDN 
   <script src="https://unpkg.com/esri-leaflet@2.1.4/dist/esri-leaflet.js"
   integrity="sha512-m+BZ3OSlzGdYLqUBZt3u6eA0sH+Txdmq7cqA1u8/B2aTXviGMMLOfrKyiIW7181jbzZAY0u+3jWoiL61iLcTKQ=="
   crossorigin=""></script>
+  END Esri Leaflet -->
 
-  <script src="https://js.arcgis.com/4.7/"></script>
+  <!-- <script src="https://js.arcgis.com/4.7/"></script> -->
 
   <style>
-    body { margin:0; padding:0; }
-    #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+	.container{
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-evenly;
+		min-width: 50%;
+		margin: 0 25%;
+		align-content: space-evenly;
+	}
+	.item {
+		border: 2px solid rgba(0,0,0,.3);
+		border-radius: .5em;
+		text-align: center;
+		padding: 0 .5em;
+		max-width: 30%;
+	}
+	.item-contents {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 100%;
+	}
   </style>
 </head>
 <body>
-
-<div id="map"></div>
-
-<script>
-  const presidentialElectionLayer = 'https://firstmap.delaware.gov/arcgis/rest/services/Applications/DE_Election2016/FeatureServer/0'
-
-  // set the map to the center of Delaware at zoom level 9
-  var map = L.map("map").setView([39.144974,-75.947085], 9);
-
-  L.esri.basemapLayer("Topographic").addTo(map);
-
-  function getColor(feature) {
-    switch (feature.properties.PARTYWIN.substring(0, 1)) {
-      case 'R': 
-        return { color: 'red', weight: 1 };
-      case 'D': 
-        return { color: 'blue', weight: 1 };
-      case 'G': 
-        return { color: 'green', weight: 1 };
-      case 'L': 
-        return { color: 'yellow', weight: 1 };
-      case 'I': 
-        return { color: 'purple', weight: 1 };
-    }
-  }
-
-  const electionDistricts = L.esri.featureLayer({
-    url: presidentialElectionLayer,
-    style: getColor
-  }).addTo(map);
-
-  electionDistricts.bindPopup(layer => {
-    const properties = layer.feature.properties
-
-    properties.PERCENTVOTING = parseInt((properties.TOTALVOTES / properties.POPULATION) * 100)
-
-    const lines = [
-      '<b>District {DISTRICT_1}</b>',
-      'Hillary Clinton (D): {DEMTOTALVOTES}',
-      'Donald Trump (R): {REPTOTALVOTES}',
-      'Jill Stein (G): {GREENTOTALVOTES}',
-      'Gary Johnson (L): {LIBTOTALVOTES}',
-      '',
-      'Total Votes: {TOTALVOTES}',
-      'Population: {POPULATION}',
-      'Percentage of Population Voting: {PERCENTVOTING}%'
-    ]
-
-    return L.Util.template(lines.join('<BR>'), properties)  
-  })
-
-</script>
-
+	<h1>Mapping Projects</h1>
+	<!-- Manual listing for now -->
+	<div class="container" >
+	<div class="item" >
+		<a href="child_care_centers.html" >
+			<div class="item-contents" >
+		<h2>Child Care Centers </h2>
+		<h3> An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="coastal_cleanup.html">
+			<div class="item-contents" >
+		<h2>Coastal Cleanup </h2>
+		<h3> An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="historic_districts.html">
+			<div class="item-contents" >
+		<h2>Historic Districts </h2>
+		<h3>An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="old_index_polit_demo.html">
+			<div class="item-contents" >
+		<h2>2016 Presidential Election Results</h2>
+		<h3>An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="municipalities.html">
+			<div class="item-contents" >
+		<h2>Municipalities</h2>
+		<h3>An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="outdoor_recreation_areas.html">
+			<div class="item-contents" >
+		<h2>Outdoor Recreation Areas</h2>
+		<h3>An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="school_districts.html">
+			<div class="item-contents" >
+		<h2>School Districts</h2>
+		<h3>An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="school_feeder_patterns.html">
+			<div class="item-contents" >
+		<h2>School Districts Feeder Patterns (First Grade)</h2>
+		<h3>An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	<div class="item" >
+		<a href="urban_areas.html">
+			<div class="item-contents" >
+		<h2>Urban Areas</h2>
+		<h3>An Open Data Delaware Project</h3>
+			</div>
+		</a>
+	</div>
+	</div>
 </body>
 </html>
