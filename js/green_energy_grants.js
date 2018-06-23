@@ -57,8 +57,14 @@ const unselectedStyle = {
 
 const selectedStyle = {
   color: 'green',
-  weight: 2,
+  weight: 3,
   fillOpacity: 0.25
+}
+
+const hoveredStyle = {
+  color: 'red',
+  weight: 1,
+  fillOpacity: 0.1
 }
 
 function formatDollars(val) {
@@ -124,6 +130,7 @@ $(document).ready(() => {
           // set the selected polygon's style to be more vibrant and resourceful
           e.layer.setStyle(selectedStyle)
           selectedPolygon = e.layer
+          hoveredPolygon = undefined
 
           $('#zipCode').text(`${zip5} (${properties.POSTOFFICENAME})`)
           $('#population').text(`${properties.POPULATION.toLocaleString('en-US')}`)
@@ -134,6 +141,18 @@ $(document).ready(() => {
           $('#windAmount').text(formatDollars(zipCodes[zip5].wind.totalRebate))
           $('#totalAmount').text(formatDollars(zipCodes[zip5].totalRebate))
 
+        }).on('mouseover', e => {
+          if (e.layer === selectedPolygon) {
+            return
+          } else {
+            hoveredPolygon = e.layer
+            e.layer.setStyle(hoveredStyle)
+          }
+        }).on('mouseout', e => {
+          if (hoveredPolygon) {
+            hoveredPolygon.setStyle(unselectedStyle)
+            hoveredPolygon = undefined
+          }
         }).bindTooltip(layer => {
           const properties = layer.feature.properties
 
@@ -144,8 +163,7 @@ $(document).ready(() => {
     })
   })
 
-  L.control.grantData({
-  }).addTo(map);
+  L.control.grantData().addTo(map);
 
 })
 
