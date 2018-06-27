@@ -11,13 +11,17 @@
 	margin: 1em;
 	background-color: #0079bf;
 	padding: 0 8px 8px 0;
-	width: 30%
+	width: 50%
+}
+@media screen and (min-width: 700px) {
+	.item {
+		width: 30%
+	}
 }
 .item-contents {
 	display: inline-block;
 	flex-direction: column;
 	justify-content: space-between;
-	height: 100%;
 }
 
 .item-link {
