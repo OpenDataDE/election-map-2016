@@ -126,10 +126,30 @@ function queryArcGIS(map) {
 $(document).ready(() => {
   const map = L.map("map").setView([39.743624, -75.549839], 15);
 
+  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/14dc08c9fe1d115308176efe88fb05dd/raw/f15adbe445204abd7db62ccfb9c5d007a72ed355/wilmington_parking_garages.geojson", {
+    style: function (feature) {
+      return { fillColor: '#342345' }
+    }
+  });
+
   L.esri.basemapLayer('Topographic').addTo(map);
   L.control.parkingInput().addTo(map);
 
   queryArcGIS(map)
+
+  parkingGarages.addTo(map);
+
+  parkingGarages.bindPopup(parkingGarage => {
+    const properties = parkingGarage.feature.properties
+
+    const lines = [
+      '<b>{name}</b>',
+      '{address}',
+      '<a href="{website}">See website for hours and rates</a>'
+    ]
+
+    return L.Util.template(lines.join('<BR>'), properties)
+  })
 
   $('.leaflet-control-layers').css({ 'width': '100', 'float': 'right' });
 
