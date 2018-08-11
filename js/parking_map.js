@@ -24,7 +24,13 @@ const paymentMethods = {
 const freeParkingTypes = {
   'none': 'None',
   '2_hour_8_to_6_sun': '2 hours, 8am-6pm, Except Sunday',
-  '2_hour_8_to_6_sat_sun': '2 hours, 8am-6pm, Except Saturday and Sunday'
+  '2_hour_8_to_6_sat_sun': '2 hours, 8am-6pm, Except Saturday and Sunday',
+  '1_hour_8_to_6_sun': '1 hour, 8am-6pm, Except Sunday',
+  '1_hour_8_to_6_sat_sun': '1 hour, 8am-6pm, Except Saturday and Sunday',
+  '30_minutes_8_to_6_sun': '30 minutes, 8am-6pm, Except Sunday',
+  '30_minutes_8_to_6_sat_sun': '30 minutes, 8am-6pm, Except Saturday and Sunday',
+  '15_minutes_8_to_6_sun': '15 minutes, 8am-6pm, Except Sunday',
+  '15_minutes_8_to_6_sat_sun': '15 minutes, 8am-6pm, Except Saturday and Sunday'
 }
 
 function getPaymentMethods(val) {
@@ -39,6 +45,8 @@ let featuresLayerGroup
 
 function queryArcGIS(map) {
   conditions = []
+
+  conditions.push('even_is_parking_available IS NOT NULL AND odd_is_parking_available IS NOT NULL')
 
   // conditions.push('1=1')
   conditions.push(`seg_id IN (${segments.join(',')})`)
@@ -55,9 +63,9 @@ function queryArcGIS(map) {
     conditions.push('even_metered LIKE \'%coins%\' OR odd_metered LIKE \'%coins%\'')
   }
   if ($('#freeSaturdayParking').is(':checked')) {
-    conditions.push('even_type_of_free_parking = \'2_hour_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'2_hour_8_to_6_sat_sun\'')
+    conditions.push('even_type_of_free_parking = \'2_hour_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'2_hour_8_to_6_sat_sun\' OR even_type_of_free_parking = \'1_hour_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'1_hour_8_to_6_sat_sun\' OR even_type_of_free_parking = \'30_minutes_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'30_minutes_8_to_6_sat_sun\' OR even_type_of_free_parking = \'15_minutes_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'15_minutes_8_to_6_sat_sun\'')
   } else if ($('#freeSundayParking').is(':checked')) {
-    conditions.push('even_type_of_free_parking = \'2_hour_8_to_6_sun\' OR odd_type_of_free_parking = \'2_hour_8_to_6_sun\'')
+    conditions.push('even_type_of_free_parking = \'2_hour_8_to_6_sun\' OR odd_type_of_free_parking = \'2_hour_8_to_6_sun\' OR even_type_of_free_parking = \'1_hour_8_to_6_sun\' OR odd_type_of_free_parking = \'1_hour_8_to_6_sun\' OR even_type_of_free_parking = \'30_minutes_8_to_6_sun\' OR odd_type_of_free_parking = \'30_minutes_8_to_6_sun\' OR even_type_of_free_parking = \'15_minutes_8_to_6_sun\' OR odd_type_of_free_parking = \'15_minutes_8_to_6_sun\'')
   }
 
   const query = L.esri.query({
@@ -86,9 +94,9 @@ function queryArcGIS(map) {
         lines.push('<p>')
         lines.push('Even-numbered:')
         if (props.even_is_parking_available === 'yes') {
-          lines.push(`Number of metered spaces: ${props.even_metered_spaces_count}`)
-          lines.push(`Number of metered accessible spaces: ${props.even_accessible_metered_spaces_count}`)
-          lines.push(`Free parking: ${freeParkingTypes[props.even_type_of_free_parking]}`)
+          lines.push(`Number of metered spaces: ${props.even_metered_spaces_count || '0'}`)
+          lines.push(`Number of metered accessible spaces: ${props.even_accessible_metered_spaces_count || '0'}`)
+          lines.push(`Free parking: ${freeParkingTypes[props.even_type_of_free_parking] || 'None'}`)
 
           if (props.even_metered_spaces_count > 0 || props.even_accessible_metered_spaces_count > 0) {
             lines.push(`Meter payments: ${getPaymentMethods(props.even_metered)}`)
@@ -102,9 +110,9 @@ function queryArcGIS(map) {
         lines.push('<p>')
         lines.push('Odd-numbered:')
         if (props.odd_is_parking_available === 'yes') {
-          lines.push(`Number of metered spaces: ${props.odd_metered_spaces_count}`)
-          lines.push(`Number of metered accessible spaces: ${props.odd_accessible_metered_spaces_count}`)
-          lines.push(`Free parking: ${freeParkingTypes[props.odd_type_of_free_parking]}`)
+          lines.push(`Number of metered spaces: ${props.odd_metered_spaces_count || '0'}`)
+          lines.push(`Number of metered accessible spaces: ${props.odd_accessible_metered_spaces_count || '0'}`)
+          lines.push(`Free parking: ${freeParkingTypes[props.odd_type_of_free_parking] || 'None'}`)
 
           if (props.odd_metered_spaces_count > 0 || props.odd_accessible_metered_spaces_count > 0) {
             lines.push(`Meter payments: ${getPaymentMethods(props.odd_metered)}`)
@@ -139,7 +147,7 @@ $(document).ready(() => {
 
   parkingGarages.addTo(map);
 
-  parkingGarages.bindPopup(parkingGarage => {
+  parkingGarages.bindTooltip(parkingGarage => {
     const properties = parkingGarage.feature.properties
 
     const lines = [
