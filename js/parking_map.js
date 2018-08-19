@@ -134,7 +134,7 @@ function queryArcGIS(map) {
 $(document).ready(() => {
   const map = L.map("map").setView([39.743624, -75.549839], 15);
 
-  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/14dc08c9fe1d115308176efe88fb05dd/raw/f15adbe445204abd7db62ccfb9c5d007a72ed355/wilmington_parking_garages.geojson", {
+  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/14dc08c9fe1d115308176efe88fb05dd/raw/230791df013d36bac441048fecba79b03c0a6916/wilmington_parking_garages.geojson", {
     style: function (feature) {
       return { fillColor: '#342345' }
     }

@@ -10,6 +10,7 @@ L.Control.ParkingInput = L.Control.extend({
 
     const inputPanel = L.DomUtil.create('div', 'panel panel-default', container)
     inputPanel.innerHTML = '<div class="row align-items-end">' +
+      '<div class="col-xs-12"><font size="+6">Wilmington, DE Parking</font></div>' +
       '<div class="col-xs-2">Metered Parking</div>' +
       '<div class="col-xs-10"><input type="checkbox" id="hasMeters">&nbsp;</input></div>' +
       '<div class="col-xs-2">Accepts Credit Cards</div>' +
