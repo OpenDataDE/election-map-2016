@@ -41,9 +41,21 @@ function getPaymentMethods(val) {
   }
 }
 
+function renderLoader() {
+  let loader = document.createElement('div');
+  loader.className = 'loader';
+  document.body.insertBefore(loader, document.body.firstChild);
+}
+
+function removeLoader() {
+  let loader = document.querySelector('.loader');
+  document.body.removeChild(loader);
+}
+
 let featuresLayerGroup
 
 function queryArcGIS(map) {
+  renderLoader();
   conditions = []
 
   conditions.push('even_is_parking_available IS NOT NULL AND odd_is_parking_available IS NOT NULL')
@@ -120,18 +132,19 @@ function queryArcGIS(map) {
 
         } else {
           lines.push('No parking available')
-
         }
-
         return lines.join('<br>')
 
-      }).addTo(map)
+      }).addTo(map);
+
+      removeLoader();
 
     }
   })
 }
 
 $(document).ready(() => {
+
   const map = L.map("parking-map").setView([39.743624, -75.549839], 15);
 
   const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/14dc08c9fe1d115308176efe88fb05dd/raw/230791df013d36bac441048fecba79b03c0a6916/wilmington_parking_garages.geojson", {
@@ -146,7 +159,7 @@ $(document).ready(() => {
   queryArcGIS(map)
 
   parkingGarages.addTo(map);
-
+  
   parkingGarages.bindTooltip(parkingGarage => {
     const properties = parkingGarage.feature.properties
 
@@ -160,12 +173,12 @@ $(document).ready(() => {
   })
 
   $('.leaflet-control-layers').css({ 'width': '100', 'float': 'right' });
-
   $('#hasMeters').change(queryArcGIS.bind(null, map))
   $('#acceptsCreditCards').change(queryArcGIS.bind(null, map))
   $('#acceptsParkMobile').change(queryArcGIS.bind(null, map))
   $('#acceptsCoins').change(queryArcGIS.bind(null, map))
   $('#freeSaturdayParking').change(queryArcGIS.bind(null, map))
   $('#freeSundayParking').change(queryArcGIS.bind(null, map))
-})
+
+});
 
