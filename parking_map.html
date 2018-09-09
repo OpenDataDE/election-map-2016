@@ -28,11 +28,16 @@
 
   <style>
     body { margin:0; padding:0; }
-    #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+    #parking-map { position: absolute; top:0; bottom:0; right:0; left:0; }
+    #parking-map .container .panel.panel-default { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; 
+      padding: 5px; max-width: 30vw; max-height: 40vh; min-width: 250px; min-height: 200px; float: right; }
+    #parking-map #filter-parking-form { margin: 0px; }
+    #parking-map #filter-parking-form input { vertical-align: text-bottom; }
+    #parking-map h3 { font-weight: 900; margin: 5px 0px 5px 0px }
   </style>
 </head>
 <body>
-  <div id="map"></div>
+  <div id="parking-map"></div>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script src="js/parking_map.js"></script>
   <script src='js/parking_map_data_control.js'></script>
