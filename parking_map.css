@@ -50,7 +50,13 @@ body {
     0% { border: 16px solid rgba(0,0,0,0); border-top: 16px solid rgb(200,0,0); border-bottom: 16px solid rgb(200,0,0); -webkit-transform: rotate(0deg); } 
     50% { border: 16px solid rgba(0,0,0,0); border-top: 16px solid rgb(0,0,200); border-bottom: 16px solid rgb(0,0,200); -webkit-transform: rotate(180deg); }     
     100% { border: 16px solid rgba(0,0,0,0); border-top: 16px solid rgb(200,0,0); border-bottom: 16px solid rgb(200,0,0); -webkit-transform: rotate(360deg); } 
-  }    
+}
+
+@-ms-keyframes msspin { 
+    0% { border: 16px solid rgba(0,0,0,0); border-top: 16px solid rgb(200,0,0); border-bottom: 16px solid rgb(200,0,0); -webkit-transform: rotate(0deg); } 
+    50% { border: 16px solid rgba(0,0,0,0); border-top: 16px solid rgb(0,0,200); border-bottom: 16px solid rgb(0,0,200); -webkit-transform: rotate(180deg); }     
+    100% { border: 16px solid rgba(0,0,0,0); border-top: 16px solid rgb(200,0,0); border-bottom: 16px solid rgb(200,0,0); -webkit-transform: rotate(360deg); } 
+}    
 
 .loader { 
     position: absolute;
@@ -69,4 +75,5 @@ body {
     z-index: 100;
     animation: spin 3s linear infinite;
     -webkit-animation: safarispin 3s linear infinite;
+    -ms-animation: msspin 3s linear infinite;
 }
