@@ -49,13 +49,15 @@ function renderLoader() {
 
 function removeLoader() {
   let loader = document.querySelector('.loader');
-  document.body.removeChild(loader);
+  if (loader) document.body.removeChild(loader);
 }
 
 let featuresLayerGroup
 
 function queryArcGIS(map) {
-  renderLoader();
+
+  let loader = document.querySelector('.loader');
+  if (!loader) renderLoader();
   conditions = []
 
   conditions.push('even_is_parking_available IS NOT NULL AND odd_is_parking_available IS NOT NULL')
