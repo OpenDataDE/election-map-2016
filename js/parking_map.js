@@ -41,6 +41,17 @@ function getPaymentMethods(val) {
   }
 }
 
+function renderLoader() {
+  let loader = document.createElement('div');
+  loader.className = 'loader';
+  document.body.insertBefore(loader, document.body.firstChild);
+}
+
+function removeLoader() {
+  let loader = document.querySelector('.loader');
+  if (loader) document.body.removeChild(loader);
+}
+
 let featuresLayerGroup
 
 function formatSpacesCountText(props, side) {
@@ -54,6 +65,9 @@ function formatSpacesCountText(props, side) {
 }
 
 function queryArcGIS(map) {
+
+  let loader = document.querySelector('.loader');
+  if (!loader) renderLoader();
   conditions = []
 
   conditions.push('even_is_parking_available IS NOT NULL AND odd_is_parking_available IS NOT NULL')
@@ -126,18 +140,19 @@ function queryArcGIS(map) {
           }
         } else {
           lines.push('No parking available')
-
         }
-
         return lines.join('<br>')
 
-      }).addTo(map)
+      }).addTo(map);
+
+      removeLoader();
 
     }
   })
 }
 
 $(document).ready(() => {
+
   const map = L.map("parking-map").setView([39.743624, -75.549839], 15);
 
   const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/ea448c29172555b9e32bd821f7974afa/raw/23dd03a3f7913d12e60eef8e838de5c1a5145718/wilmington_parking_lots_and_garages.geojson", {
@@ -156,7 +171,7 @@ $(document).ready(() => {
   queryArcGIS(map)
 
   parkingGarages.addTo(map);
-
+  
   parkingGarages.bindTooltip(parkingGarage => {
     const properties = parkingGarage.feature.properties
 
@@ -178,12 +193,12 @@ $(document).ready(() => {
   })
 
   $('.leaflet-control-layers').css({ 'width': '100', 'float': 'right' });
-
   $('#hasMeters').change(queryArcGIS.bind(null, map))
   $('#acceptsCreditCards').change(queryArcGIS.bind(null, map))
   $('#acceptsParkMobile').change(queryArcGIS.bind(null, map))
   $('#acceptsCoins').change(queryArcGIS.bind(null, map))
   $('#freeSaturdayParking').change(queryArcGIS.bind(null, map))
   $('#freeSundayParking').change(queryArcGIS.bind(null, map))
-})
+
+});
 

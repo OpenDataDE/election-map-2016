@@ -8,6 +8,8 @@
   integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
   crossorigin="anonymous">
 
+  <link rel="stylesheet" href="parking_map.css" />
+
   <!-- Load Leaflet from CDN -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
   integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
@@ -26,15 +28,6 @@
   <script src="https://js.arcgis.com/4.7/"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.js"></script>
 
-  <style>
-    body { margin:0; padding:0; }
-    #parking-map { position: absolute; top:0; bottom:0; right:0; left:0; }
-    #parking-map .container .panel.panel-default { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; 
-      padding: 5px; max-width: 30vw; max-height: 40vh; min-width: 250px; min-height: 200px; float: right; }
-    #parking-map #filter-parking-form { margin: 0px; }
-    #parking-map #filter-parking-form input { vertical-align: text-bottom; }
-    #parking-map h3 { font-weight: 900; margin: 5px 0px 5px 0px }
-  </style>
 </head>
 <body>
   <div id="parking-map"></div>

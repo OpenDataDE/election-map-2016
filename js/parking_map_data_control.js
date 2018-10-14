@@ -10,7 +10,7 @@ L.Control.ParkingInput = L.Control.extend({
 
     const inputPanel = L.DomUtil.create('div', 'panel panel-default', container)
     inputPanel.innerHTML = 
-      '<h3>Wilmington, DE</h3>' +
+      '<h4>Wilmington, DE</h4>' +
       '<form id="filter-parking-form">' +
         '<div>' +
         '<label>' +
