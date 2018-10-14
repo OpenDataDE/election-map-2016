@@ -43,6 +43,16 @@ function getPaymentMethods(val) {
 
 let featuresLayerGroup
 
+function formatSpacesCountText(props, side) {
+  let text = ''
+  text += (props[`${side}_metered_spaces_count`] || 0) + (props[`${side}_num_access_metered_spaces`] || 0)
+  if (props[`${side}_num_access_metered_spaces`]) {
+    text += ' (' + props[`${side}_num_access_metered_spaces`] + ' accessible)'
+  }
+
+  return text
+}
+
 function queryArcGIS(map) {
   conditions = []
 
@@ -51,25 +61,25 @@ function queryArcGIS(map) {
   // conditions.push('1=1')
   conditions.push(`seg_id IN (${segments.join(',')})`)
   if ($('#hasMeters').is(':checked')) {
-    conditions.push('even_metered_spaces_count > 0 OR odd_metered_spaces_count > 0 OR even_accessible_metered_spaces_count > 0 OR odd_accessible_metered_spaces_count > 0')
+    conditions.push('even_metered_spaces_count > 0 OR odd_metered_spaces_count > 0 OR even_num_access_metered_spaces > 0 OR odd_num_access_metered_spaces > 0')
   }
   if ($('#acceptsCreditCards').is(':checked')) {
-    conditions.push('even_metered LIKE \'%credit_card%\' OR odd_metered LIKE \'%credit_card%\'')
+    conditions.push('even_meter_payment_types LIKE \'%credit_card%\' OR odd_meter_payment_types LIKE \'%credit_card%\'')
   }
   if ($('#acceptsParkMobile').is(':checked')) {
-    conditions.push('even_metered LIKE \'%park_mobile%\' OR odd_metered LIKE \'%park_mobile%\'')
+    conditions.push('even_meter_payment_types LIKE \'%park_mobile%\' OR odd_meter_payment_types LIKE \'%park_mobile%\'')
   }
   if ($('#acceptsCoins').is(':checked')) {
-    conditions.push('even_metered LIKE \'%coins%\' OR odd_metered LIKE \'%coins%\'')
+    conditions.push('even_meter_payment_types LIKE \'%coins%\' OR odd_meter_payment_types LIKE \'%coins%\'')
   }
   if ($('#freeSaturdayParking').is(':checked')) {
-    conditions.push('even_type_of_free_parking = \'2_hour_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'2_hour_8_to_6_sat_sun\' OR even_type_of_free_parking = \'1_hour_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'1_hour_8_to_6_sat_sun\' OR even_type_of_free_parking = \'30_minutes_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'30_minutes_8_to_6_sat_sun\' OR even_type_of_free_parking = \'15_minutes_8_to_6_sat_sun\' OR odd_type_of_free_parking = \'15_minutes_8_to_6_sat_sun\'')
+    conditions.push('even_exception_days LIKE \'%sat%\' OR odd_exception_days LIKE \'%sat%\'')
   } else if ($('#freeSundayParking').is(':checked')) {
-    conditions.push('even_type_of_free_parking = \'2_hour_8_to_6_sun\' OR odd_type_of_free_parking = \'2_hour_8_to_6_sun\' OR even_type_of_free_parking = \'1_hour_8_to_6_sun\' OR odd_type_of_free_parking = \'1_hour_8_to_6_sun\' OR even_type_of_free_parking = \'30_minutes_8_to_6_sun\' OR odd_type_of_free_parking = \'30_minutes_8_to_6_sun\' OR even_type_of_free_parking = \'15_minutes_8_to_6_sun\' OR odd_type_of_free_parking = \'15_minutes_8_to_6_sun\'')
+    conditions.push('even_exception_days LIKE \'%sun%\' OR odd_exception_days LIKE \'%sun%\'')
   }
 
   const query = L.esri.query({
-    url: 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/Wilmington_Streets_All/FeatureServer/0'
+    url: 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/ArcGIS/rest/services/Wilmington_Streets_All_new_format/FeatureServer/0'
   })
   .where(conditions.map(condition => `(${condition})`).join(' AND '))
   .run((err, featureCollection, response) => {
@@ -94,14 +104,12 @@ function queryArcGIS(map) {
         lines.push('<p>')
         lines.push('Even-numbered:')
         if (props.even_is_parking_available === 'yes') {
-          lines.push(`Number of metered spaces: ${props.even_metered_spaces_count || '0'}`)
-          lines.push(`Number of metered accessible spaces: ${props.even_accessible_metered_spaces_count || '0'}`)
-          lines.push(`Free parking: ${freeParkingTypes[props.even_type_of_free_parking] || 'None'}`)
+          lines.push(`Metered spaces: ${formatSpacesCountText(props, 'even')}`)
+          lines.push(`Free parking days: ${freeParkingTypes[props.even_exception_days] || 'None'}`)
 
-          if (props.even_metered_spaces_count > 0 || props.even_accessible_metered_spaces_count > 0) {
-            lines.push(`Meter payments: ${getPaymentMethods(props.even_metered)}`)
+          if (props.even_metered_spaces_count > 0 || props.even_num_access_metered_spaces > 0) {
+            lines.push(`Meter payments: ${getPaymentMethods(props.even_meter_payment_types)}`)
           }
-
         } else {
           lines.push('No parking available')
 
@@ -110,14 +118,12 @@ function queryArcGIS(map) {
         lines.push('<p>')
         lines.push('Odd-numbered:')
         if (props.odd_is_parking_available === 'yes') {
-          lines.push(`Number of metered spaces: ${props.odd_metered_spaces_count || '0'}`)
-          lines.push(`Number of metered accessible spaces: ${props.odd_accessible_metered_spaces_count || '0'}`)
-          lines.push(`Free parking: ${freeParkingTypes[props.odd_type_of_free_parking] || 'None'}`)
+          lines.push(`Metered spaces: ${formatSpacesCountText(props, 'odd')}`)
+          lines.push(`Free parking days: ${freeParkingTypes[props.odd_exception_days] || 'None'}`)
 
-          if (props.odd_metered_spaces_count > 0 || props.odd_accessible_metered_spaces_count > 0) {
-            lines.push(`Meter payments: ${getPaymentMethods(props.odd_metered)}`)
+          if (props.odd_metered_spaces_count > 0 || props.odd_num_access_metered_spaces > 0) {
+            lines.push(`Meter payments: ${getPaymentMethods(props.odd_meter_payment_types)}`)
           }
-
         } else {
           lines.push('No parking available')
 
@@ -134,9 +140,13 @@ function queryArcGIS(map) {
 $(document).ready(() => {
   const map = L.map("parking-map").setView([39.743624, -75.549839], 15);
 
-  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/14dc08c9fe1d115308176efe88fb05dd/raw/230791df013d36bac441048fecba79b03c0a6916/wilmington_parking_garages.geojson", {
+  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/ea448c29172555b9e32bd821f7974afa/raw/23dd03a3f7913d12e60eef8e838de5c1a5145718/wilmington_parking_lots_and_garages.geojson", {
     style: function (feature) {
-      return { fillColor: '#342345' }
+      const weight = 1
+      const color = '#342345'
+      const fillColor = feature.properties.type === 'surface' ? 'black' : 'purple'
+
+      return { weight, color, fillColor }
     }
   });
 
@@ -150,11 +160,19 @@ $(document).ready(() => {
   parkingGarages.bindTooltip(parkingGarage => {
     const properties = parkingGarage.feature.properties
 
-    const lines = [
-      '<b>{name}</b>',
-      '{address}',
-      '<a href="{website}">See website for hours and rates</a>'
-    ]
+    const lines = []
+
+    if (properties.name) {
+      lines.push('<b>{name}</b>')
+    }
+
+    lines.push('{address}')
+    lines.push('Management: {vendor}')
+    lines.push('Spaces: {space_count}')
+
+    if (properties.url) {
+      lines.push('<a href="{url}">See website for hours and rates</a>')
+    }
 
     return L.Util.template(lines.join('<BR>'), properties)
   })
