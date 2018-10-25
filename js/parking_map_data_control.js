@@ -9,7 +9,7 @@ L.Control.ParkingInput = L.Control.extend({
     const container = L.DomUtil.create('div', 'container')
 
     const inputPanel = L.DomUtil.create('div', 'panel panel-default', container)
-    inputPanel.innerHTML = 
+    inputPanel.innerHTML =
       '<h3>Wilmington, DE</h3>' +
       '<form id="filter-parking-form">' +
         '<div>' +
@@ -42,6 +42,17 @@ L.Control.ParkingInput = L.Control.extend({
           '<input type="checkbox" id="freeSundayParking" /> Free Sunday Parking' +
         '</label>' +
         '</div>' +
+        '<div>' +
+          '<label>' +
+            'How Long: <select id="parkingTime"/>' +
+              '<option value="15">15 minutes</option>' +
+              '<option value="30">30 minutes</option>' +
+              '<option value="60">1 hour</option>' +
+              '<option value="120">2 hours</option>' +
+              '<option value="240">4 hours</option>' +
+            '</select>' +
+          '</label>' +
+        '</div>'
       '</form>'
 
     return container

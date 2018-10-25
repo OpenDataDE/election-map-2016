@@ -22,15 +22,9 @@ const paymentMethods = {
 }
 
 const freeParkingTypes = {
-  'none': 'None',
-  '2_hour_8_to_6_sun': '2 hours, 8am-6pm, Except Sunday',
-  '2_hour_8_to_6_sat_sun': '2 hours, 8am-6pm, Except Saturday and Sunday',
-  '1_hour_8_to_6_sun': '1 hour, 8am-6pm, Except Sunday',
-  '1_hour_8_to_6_sat_sun': '1 hour, 8am-6pm, Except Saturday and Sunday',
-  '30_minutes_8_to_6_sun': '30 minutes, 8am-6pm, Except Sunday',
-  '30_minutes_8_to_6_sat_sun': '30 minutes, 8am-6pm, Except Saturday and Sunday',
-  '15_minutes_8_to_6_sun': '15 minutes, 8am-6pm, Except Sunday',
-  '15_minutes_8_to_6_sat_sun': '15 minutes, 8am-6pm, Except Saturday and Sunday'
+  null: 'None',
+  'sat,sun': 'Saturday and Sunday',
+  'sun': 'Sunday'
 }
 
 function getPaymentMethods(val) {
@@ -53,86 +47,133 @@ function formatSpacesCountText(props, side) {
   return text
 }
 
-function queryArcGIS(map) {
-  conditions = []
+function isParkingAvailable(props) {
+  return props.even_is_parking_available === 'yes' || props.odd_is_parking_available === 'yes'
+}
 
-  conditions.push('even_is_parking_available IS NOT NULL AND odd_is_parking_available IS NOT NULL')
-
-  // conditions.push('1=1')
-  conditions.push(`seg_id IN (${segments.join(',')})`)
-  if ($('#hasMeters').is(':checked')) {
-    conditions.push('even_metered_spaces_count > 0 OR odd_metered_spaces_count > 0 OR even_num_access_metered_spaces > 0 OR odd_num_access_metered_spaces > 0')
+function getStreetStyle(feature, layer) {
+  if (isParkingAvailable(feature.properties)) {
+    return {
+      weight: 2,
+      color: 'black'
+    }
+  } else {
+    return {
+      weight: 1,
+      color: 'grey'
+    }
   }
-  if ($('#acceptsCreditCards').is(':checked')) {
-    conditions.push('even_meter_payment_types LIKE \'%credit_card%\' OR odd_meter_payment_types LIKE \'%credit_card%\'')
+}
+
+function getLotOrGarageStyle(feature) {
+  return {
+    weight: 2,
+    color: '#342345',
+    fillColor: feature.properties.type === 'surface' ? 'brown' : 'purple'
+  }
+}
+
+function setupStreetTooltip(layer) {
+  const props = layer.feature.properties
+
+  const lines = []
+
+  // lines.push(`segment id: ${props.seg_id}`)
+  lines.push(`<b>${props.label_text} from ${Math.min(props.fr_add_lt, props.fr_add_rt)} to ${Math.max(props.to_add_lt, props.to_add_rt)}</b>`)
+  lines.push(`Between <b>${props.fromstreet}</b> and <b>${props.tostreet}</b>`)
+
+  if (props.even_is_parking_available === 'no' && props.odd_is_parking_available === 'no') {
+    lines.push('<p>No parking available')
+  } else {
+    lines.push('<p>')
+    lines.push('Even-numbered:')
+    if (props.even_is_parking_available === 'yes') {
+      lines.push(`Metered spaces: ${formatSpacesCountText(props, 'even')}`)
+      lines.push(`Free parking days: ${freeParkingTypes[props.even_exception_days]}`)
+
+      if (props.even_metered_spaces_count > 0 || props.even_num_access_metered_spaces > 0) {
+        lines.push(`Meter payments: ${getPaymentMethods(props.even_meter_payment_types)}`)
+      }
+    } else {
+      lines.push('No parking available')
+
+    }
+
+    lines.push('<p>')
+    lines.push('Odd-numbered:')
+    if (props.odd_is_parking_available === 'yes') {
+      lines.push(`Metered spaces: ${formatSpacesCountText(props, 'odd')}`)
+      lines.push(`Free parking days: ${freeParkingTypes[props.odd_exception_days]}`)
+
+      if (props.odd_metered_spaces_count > 0 || props.odd_num_access_metered_spaces > 0) {
+        lines.push(`Meter payments: ${getPaymentMethods(props.odd_meter_payment_types)}`)
+      }
+    } else {
+      lines.push('No parking available')
+
+    }
+  }
+
+  return lines.join('<br>')
+}
+
+function setupLotOrGarageTooltip(parkingGarage) {
+  const properties = parkingGarage.feature.properties
+
+  const lines = []
+
+  if (properties.name) {
+    lines.push('<b>{name}</b>')
+  }
+
+  if (properties.type === 'surface') {
+    lines.push('Surface Lot')
+  } else {
+    lines.push('Parking Garage')
+  }
+  lines.push('{address}')
+  lines.push('Operated by {vendor}')
+  lines.push('Spaces: {space_count}')
+
+  if (properties.url) {
+    lines.push('<a href="{url}">See website for hours and rates</a>')
+  }
+
+  return L.Util.template(lines.join('<BR>'), properties)
+}
+
+function filterStreetBlocks(map) {
+  const acceptsCoins = $('#acceptsCoins').is(':checked')
+  const acceptsParkMobile = $('#acceptsParkMobile').is(':checked')
+  const acceptsCreditCards = $('#acceptsCreditCards').is(':checked')
+
+  const requestedPaymentMethods = new Set()
+  if ($('#acceptsCoins').is(':checked')) {
+    requestedPaymentMethods.add('coins')
   }
   if ($('#acceptsParkMobile').is(':checked')) {
-    conditions.push('even_meter_payment_types LIKE \'%park_mobile%\' OR odd_meter_payment_types LIKE \'%park_mobile%\'')
+    requestedPaymentMethods.add('park_mobile')
   }
-  if ($('#acceptsCoins').is(':checked')) {
-    conditions.push('even_meter_payment_types LIKE \'%coins%\' OR odd_meter_payment_types LIKE \'%coins%\'')
-  }
-  if ($('#freeSaturdayParking').is(':checked')) {
-    conditions.push('even_exception_days LIKE \'%sat%\' OR odd_exception_days LIKE \'%sat%\'')
-  } else if ($('#freeSundayParking').is(':checked')) {
-    conditions.push('even_exception_days LIKE \'%sun%\' OR odd_exception_days LIKE \'%sun%\'')
+  if ($('#acceptsCreditCards').is(':checked')) {
+    requestedPaymentMethods.add('credit_card')
   }
 
-  const query = L.esri.query({
-    url: 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/ArcGIS/rest/services/Wilmington_Parking_Data/FeatureServer/0'
-  })
-  .where(conditions.map(condition => `(${condition})`).join(' AND '))
-  .run((err, featureCollection, response) => {
-    if (err) {
-      console.error(JSON.stringify(err, null, 2))
-      console.error(response)
-    } else {
-      if (featuresLayerGroup) {
-        featuresLayerGroup.clearLayers()
+  map.eachLayer(layer => {
+    if (layer.feature && layer.feature.id) {
+      const props = layer.feature.properties
+
+      const evenPaymentMethods = (props.even_meter_payment_types || '').split(',').filter(x => x != '')
+      const oddPaymentMethods = (props.odd_meter_payment_types || '').split(',').filter(x => x != '')
+
+      const supportedPaymentMethods = new Set([...evenPaymentMethods, ...oddPaymentMethods])
+
+      const supportedRequestedPaymentMethods = [...supportedPaymentMethods].some(x => requestedPaymentMethods.has(x));
+
+      if (supportedRequestedPaymentMethods) {
+        layer.setStyle({ weight: 5 })
+      } else {
+        layer.setStyle({ weight: 1 })
       }
-
-      // console.error(response)
-      featuresLayerGroup = L.geoJSON(featureCollection).bindTooltip(layer => {
-        const props = layer.feature.properties
-
-        const lines = []
-
-        lines.push(`segment id: ${props.seg_id}`)
-        lines.push(`<b>${props.label_text} from ${Math.min(props.fr_add_lt, props.fr_add_rt)} to ${Math.max(props.to_add_lt, props.to_add_rt)}</b>`)
-        lines.push(`Between <b>${props.fromstreet}</b> and <b>${props.tostreet}</b>`)
-
-        lines.push('<p>')
-        lines.push('Even-numbered:')
-        if (props.even_is_parking_available === 'yes') {
-          lines.push(`Metered spaces: ${formatSpacesCountText(props, 'even')}`)
-          lines.push(`Free parking days: ${freeParkingTypes[props.even_exception_days] || 'None'}`)
-
-          if (props.even_metered_spaces_count > 0 || props.even_num_access_metered_spaces > 0) {
-            lines.push(`Meter payments: ${getPaymentMethods(props.even_meter_payment_types)}`)
-          }
-        } else {
-          lines.push('No parking available')
-
-        }
-
-        lines.push('<p>')
-        lines.push('Odd-numbered:')
-        if (props.odd_is_parking_available === 'yes') {
-          lines.push(`Metered spaces: ${formatSpacesCountText(props, 'odd')}`)
-          lines.push(`Free parking days: ${freeParkingTypes[props.odd_exception_days] || 'None'}`)
-
-          if (props.odd_metered_spaces_count > 0 || props.odd_num_access_metered_spaces > 0) {
-            lines.push(`Meter payments: ${getPaymentMethods(props.odd_meter_payment_types)}`)
-          }
-        } else {
-          lines.push('No parking available')
-
-        }
-
-        return lines.join('<br>')
-
-      }).addTo(map)
-
     }
   })
 }
@@ -140,50 +181,31 @@ function queryArcGIS(map) {
 $(document).ready(() => {
   const map = L.map("parking-map").setView([39.743624, -75.549839], 15);
 
-  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/ea448c29172555b9e32bd821f7974afa/raw/23dd03a3f7913d12e60eef8e838de5c1a5145718/wilmington_parking_lots_and_garages.geojson", {
-    style: function (feature) {
-      const weight = 1
-      const color = '#342345'
-      const fillColor = feature.properties.type === 'surface' ? 'black' : 'purple'
-
-      return { weight, color, fillColor }
-    }
-  });
-
   L.esri.basemapLayer('Topographic').addTo(map);
   L.control.parkingInput().addTo(map);
 
-  queryArcGIS(map)
-
-  parkingGarages.addTo(map);
-
-  parkingGarages.bindTooltip(parkingGarage => {
-    const properties = parkingGarage.feature.properties
-
-    const lines = []
-
-    if (properties.name) {
-      lines.push('<b>{name}</b>')
-    }
-
-    lines.push('{address}')
-    lines.push('Management: {vendor}')
-    lines.push('Spaces: {space_count}')
-
-    if (properties.url) {
-      lines.push('<a href="{url}">See website for hours and rates</a>')
-    }
-
-    return L.Util.template(lines.join('<BR>'), properties)
+  const query = L.esri.query({
+    url: 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/ArcGIS/rest/services/Wilmington_Parking_Data/FeatureServer/0'
   })
+  .where(`seg_id IN (${segments.join(',')})`)
+  .run((err, featureCollection, response) => {
+    L.geoJSON(featureCollection, {
+      style: getStreetStyle
+    }).bindTooltip(setupStreetTooltip).addTo(map)
+  })
+
+  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/ea448c29172555b9e32bd821f7974afa/raw/23dd03a3f7913d12e60eef8e838de5c1a5145718/wilmington_parking_lots_and_garages.geojson", {
+    style: getLotOrGarageStyle
+  }).bindTooltip(setupLotOrGarageTooltip).addTo(map);
 
   $('.leaflet-control-layers').css({ 'width': '100', 'float': 'right' });
 
-  $('#hasMeters').change(queryArcGIS.bind(null, map))
-  $('#acceptsCreditCards').change(queryArcGIS.bind(null, map))
-  $('#acceptsParkMobile').change(queryArcGIS.bind(null, map))
-  $('#acceptsCoins').change(queryArcGIS.bind(null, map))
-  $('#freeSaturdayParking').change(queryArcGIS.bind(null, map))
-  $('#freeSundayParking').change(queryArcGIS.bind(null, map))
+  $('#hasMeters').change(filterStreetBlocks.bind(null, map))
+  $('#acceptsCreditCards').change(filterStreetBlocks.bind(null, map))
+  $('#acceptsParkMobile').change(filterStreetBlocks.bind(null, map))
+  $('#acceptsCoins').change(filterStreetBlocks.bind(null, map))
+  $('#freeSaturdayParking').change(filterStreetBlocks.bind(null, map))
+  $('#freeSundayParking').change(filterStreetBlocks.bind(null, map))
+  $('#parkingTime').change(filterStreetBlocks.bind(null, map))
 })
 
