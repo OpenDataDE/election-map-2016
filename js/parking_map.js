@@ -79,7 +79,7 @@ function queryArcGIS(map) {
   }
 
   const query = L.esri.query({
-    url: 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/ArcGIS/rest/services/Wilmington_Streets_All_new_format/FeatureServer/0'
+    url: 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/ArcGIS/rest/services/Wilmington_Parking_Data/FeatureServer/0'
   })
   .where(conditions.map(condition => `(${condition})`).join(' AND '))
   .run((err, featureCollection, response) => {
