@@ -15,6 +15,9 @@ const segments = [
   2961, 3000, 3423
 ]
 
+const streetParkingArcGISUrl = 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/ArcGIS/rest/services/Wilmington_Parking_Data/FeatureServer/0'
+const offStreetParkingUrl = 'https://gist.githubusercontent.com/trescube/ea448c29172555b9e32bd821f7974afa/raw/6b8e97b8e6cd1421b914045edde44597f2a1b807/wilmington_parking_lots_and_garages.geojson'
+
 const paymentMethods = {
   'credit_card': 'Credit Card',
   'park_mobile': 'Park Mobile',
@@ -78,7 +81,7 @@ function setupStreetTooltip(layer) {
 
   const lines = []
 
-  // lines.push(`segment id: ${props.seg_id}`)
+  lines.push(`object id: ${props.objectid}`)
   lines.push(`<b>${props.label_text} from ${Math.min(props.fr_add_lt, props.fr_add_rt)} to ${Math.max(props.to_add_lt, props.to_add_rt)}</b>`)
   lines.push(`Between <b>${props.fromstreet}</b> and <b>${props.tostreet}</b>`)
 
@@ -185,7 +188,7 @@ $(document).ready(() => {
   L.control.parkingInput().addTo(map);
 
   const query = L.esri.query({
-    url: 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/ArcGIS/rest/services/Wilmington_Parking_Data/FeatureServer/0'
+    url: streetParkingArcGISUrl
   })
   .where(`seg_id IN (${segments.join(',')})`)
   .run((err, featureCollection, response) => {
@@ -194,7 +197,7 @@ $(document).ready(() => {
     }).bindTooltip(setupStreetTooltip).addTo(map)
   })
 
-  const parkingGarages = new L.GeoJSON.AJAX("https://gist.githubusercontent.com/trescube/ea448c29172555b9e32bd821f7974afa/raw/23dd03a3f7913d12e60eef8e838de5c1a5145718/wilmington_parking_lots_and_garages.geojson", {
+  const parkingGarages = new L.GeoJSON.AJAX(offStreetParkingUrl, {
     style: getLotOrGarageStyle
   }).bindTooltip(setupLotOrGarageTooltip).addTo(map);
 
